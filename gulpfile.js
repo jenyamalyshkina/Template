@@ -1,6 +1,7 @@
 var gulp = require('gulp'),
     jade = require('gulp-jade'),
     sass = require('gulp-sass'),
+    concat = require('gulp-concat'),
     plumber = require('gulp-plumber'),
     uglify = require('gulp-uglify'),
     sourcemaps = require('gulp-sourcemaps'),
@@ -18,25 +19,30 @@ gulp.task('jade-compile', function () {
       locals: YOUR_LOCALS,
       pretty: true
     }))
-    .pipe(gulp.dest('./prod/pages/'))
+    .pipe(gulp.dest('prod'))
 });
 
 
-// Компиляция файлов .scss
+// Компиляция и конкатенация файлов .scss
 gulp.task('sass-compile', function () {
   return gulp.src('dev/scss/*.scss')
     .pipe(plumber())
     .pipe(sourcemaps.init())
     .pipe(sass().on('error', sass.logError))
+    .pipe(sass({outputStyle: 'expanded'}))
+    .pipe(concat('main.min.css'))
     .pipe(sourcemaps.write())
     .pipe(gulp.dest('prod/css'));
 });
 
 
-// Минимификация файлов .js
+// Минимификация и конкатенация файлов .js
 gulp.task('min-js', function() {
   return gulp.src('dev/*.js')
+    .pipe(sourcemaps.init())
+    .pipe(concat('main.min.js'))
     .pipe(uglify())
+    .pipe(sourcemaps.write())
     .pipe(gulp.dest('prod/js/'));
 });
 
@@ -59,7 +65,7 @@ gulp.task('server', function () {
   browserSync({
     port: 9000,
     server: {
-      baseDir: 'prod/pages/'
+      baseDir: 'prod'
     }
   });
 });
@@ -67,10 +73,11 @@ gulp.task('server', function () {
 
 // Слежка
 gulp.task('watch', function () {
-  gulp.watch('./dev/jade/**/*.jade', ['jade-compile']);
-  gulp.watch('dev/js/*.js', ['min-js']);
+  gulp.watch('dev/jade/**/*.jade', ['jade-compile']);
+  gulp.watch('dev/scss/**/*.scss', ['sass-compile']);
+  gulp.watch('dev/js/**/*.js', ['min-js']);
   gulp.watch([
-    'prod/pages/*.html',
+    'prod/*.html',
     'prod/js/**/*.js',
     'prod/css/**/*.css'
   ]).on('change', browserSync.reload);

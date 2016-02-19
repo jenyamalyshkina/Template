@@ -2,7 +2,7 @@
 
 1. git clone https://github.com/jenyamalyshkina/Template Folder
 2. cd Folder
-3. bower i
-4. npm i
-5. gulp
-6. delete folder .git
+3. rm -r .git
+4. bower i
+5. npm i
+6. gulp
